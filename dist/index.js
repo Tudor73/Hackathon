@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -7,6 +16,7 @@ require("reflect-metadata");
 const express_1 = __importDefault(require("express"));
 const passport_1 = __importDefault(require("passport"));
 const sqlite3_1 = __importDefault(require("sqlite3"));
+const openai_1 = require("openai");
 const cors_1 = __importDefault(require("cors"));
 const session = require("express-session");
 require('dotenv').config();
@@ -41,6 +51,19 @@ passport_1.default.use(new passport_github_1.Strategy({
     const user = { name: profile.username, githubId: profile.id };
     db.run("INSERT INTO users (name, githubId) VALUES (?, ?)", [profile.username, profile.id], (err) => { return cb(err, user); });
 }));
+function aiReq(questionForGPT) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let configuration = new openai_1.Configuration({
+            apiKey: "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"
+        });
+        let openai = new openai_1.OpenAIApi(configuration);
+        return openai.createChatCompletion({
+            model: "gpt-3.5-turbo",
+            messages: [{ "role": "user", "content": questionForGPT }],
+            temperature: 0.1
+        });
+    });
+}
 app.get("/", (req, res) => {
     res.send("Hello World!");
 });
@@ -48,11 +71,14 @@ app.get("/auth/github", passport_1.default.authenticate("github"));
 app.get("/auth/github/callback", passport_1.default.authenticate("github", { failureRedirect: "/login" }), (req, res) => {
     res.redirect("/");
 });
-app.get("/query", (req, res) => {
-    console.log(passport_1.default.session());
-    if (!passport_1.default.session())
-        return res.status(401).send("Unauthorized");
-    return res.send("Authorized");
+app.post("/query", (req, res) => {
+    const language = req.body.language;
+    const code = req.body.code;
+    const prompt = `Respond using markdown and write only code. Better ways to write this in ${language}: ${code}`;
+    aiReq(prompt).then((data) => {
+        var _a;
+        res.send((_a = data.data.choices[0].message) === null || _a === void 0 ? void 0 : _a.content);
+    });
 });
 app.listen(port, () => {
     console.log("Server started on port 3000");

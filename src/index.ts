@@ -2,6 +2,7 @@ import "reflect-metadata";
 import express  from "express";
 import passport from "passport";
 import sqlite3  from "sqlite3";
+import { OpenAIApi, Configuration } from "openai";
 import cors from "cors";
 const session = require("express-session")
 require('dotenv').config()
@@ -49,8 +50,18 @@ passport.use(new GitHubStrategy({
   }
 ));
 
+async function aiReq(questionForGPT: string) {
+  let configuration = new Configuration({
+      apiKey: "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"     
+  })
+  let openai = new OpenAIApi(configuration);
+  return openai.createChatCompletion({
+      model: "gpt-3.5-turbo",
+      messages: [{ "role": "user", "content": questionForGPT }],
+      temperature: 0.1
+  })
 
-
+}
 app.get("/", (req, res) => {
     res.send("Hello World!");
 })
@@ -63,11 +74,15 @@ app.get("/auth/github/callback", passport.authenticate("github", { failureRedire
 });
 
 
-app.get("/query", (req, res) => {
-    console.log(passport.session())
-    if (!passport.session())
-        return res.status(401).send("Unauthorized");
-    return res.send("Authorized")
+
+
+app.post("/query", (req, res) => {
+  const language = req.body.language;
+  const code = req.body.code
+  const prompt = `Respond using markdown and write only code. Better ways to write this in ${language}: ${code}`
+  aiReq(prompt).then((data) => {
+    res.send(data.data.choices[0].message?.content)
+  })
 });
 
 app.listen(port, () => {
