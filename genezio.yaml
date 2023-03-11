@@ -1,0 +1,10 @@
+name: hackathon-ts
+sdk:
+  language: ts
+  options:
+    runtime: node
+  path: ./sdk/
+classes:
+  - path: ./src/index.ts
+    type: jsonrpc
+    methods: []
