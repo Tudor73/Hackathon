@@ -52,7 +52,7 @@ passport.use(new GitHubStrategy({
 
 async function aiReq(questionForGPT: string) {
   let configuration = new Configuration({
-      apiKey: "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"     
+      apiKey: process.env.API_KEY     
   })
   let openai = new OpenAIApi(configuration);
   return openai.createChatCompletion({
@@ -81,7 +81,7 @@ app.post("/query", (req, res) => {
   const code = req.body.code
   const prompt = `Respond using markdown and write only code. Better ways to write this in ${language}: ${code}`
   aiReq(prompt).then((data) => {
-    res.send(data.data.choices[0].message?.content)
+    res.json({"suggestion": data.data.choices[0].message?.content})
   })
 });
 

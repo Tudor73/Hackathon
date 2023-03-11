@@ -54,7 +54,7 @@ passport_1.default.use(new passport_github_1.Strategy({
 function aiReq(questionForGPT) {
     return __awaiter(this, void 0, void 0, function* () {
         let configuration = new openai_1.Configuration({
-            apiKey: "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"
+            apiKey: process.env.API_KEY
         });
         let openai = new openai_1.OpenAIApi(configuration);
         return openai.createChatCompletion({
@@ -77,7 +77,7 @@ app.post("/query", (req, res) => {
     const prompt = `Respond using markdown and write only code. Better ways to write this in ${language}: ${code}`;
     aiReq(prompt).then((data) => {
         var _a;
-        res.send((_a = data.data.choices[0].message) === null || _a === void 0 ? void 0 : _a.content);
+        res.json({ "suggestion": (_a = data.data.choices[0].message) === null || _a === void 0 ? void 0 : _a.content });
     });
 });
 app.listen(port, () => {
