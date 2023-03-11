@@ -35,7 +35,7 @@ app.use(passport_1.default.initialize());
 passport_1.default.use(new passport_github_1.Strategy({
     clientID: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/auth/github/callback"
+    callbackURL: "https://hackathon-production-6f8c.up.railway.app/auth/github/callback"
 }, function (accessToken, refreshToken, profile, cb) {
     console.log(profile);
     const user = { name: profile.username, githubId: profile.id };
@@ -49,6 +49,7 @@ app.get("/auth/github/callback", passport_1.default.authenticate("github", { fai
     res.redirect("/");
 });
 app.get("/query", (req, res) => {
+    console.log(passport_1.default.session());
     if (!passport_1.default.session())
         return res.status(401).send("Unauthorized");
     return res.send("Authorized");

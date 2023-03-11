@@ -37,7 +37,7 @@ app.use(passport.initialize())
 passport.use(new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/auth/github/callback"
+    callbackURL: "https://hackathon-production-6f8c.up.railway.app/auth/github/callback"
   },
   function(accessToken, refreshToken, profile, cb) {
     // User.findOrCreate({ githubId: profile.id }, function (err, user) {
@@ -64,6 +64,7 @@ app.get("/auth/github/callback", passport.authenticate("github", { failureRedire
 
 
 app.get("/query", (req, res) => {
+    console.log(passport.session())
     if (!passport.session())
         return res.status(401).send("Unauthorized");
     return res.send("Authorized")
