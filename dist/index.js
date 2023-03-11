@@ -11,6 +11,7 @@ const cors_1 = __importDefault(require("cors"));
 const session = require("express-session");
 require('dotenv').config();
 const passport_github_1 = require("passport-github");
+const port = process.env.PORT || 3000;
 const app = (0, express_1.default)();
 passport_1.default.serializeUser(function (user, done) {
     done(null, user);
@@ -52,7 +53,7 @@ app.get("/query", (req, res) => {
         return res.status(401).send("Unauthorized");
     return res.send("Authorized");
 });
-app.listen(3000, () => {
+app.listen(port, () => {
     console.log("Server started on port 3000");
 });
 //# sourceMappingURL=index.js.map
